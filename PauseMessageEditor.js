@@ -28,10 +28,10 @@ function updateCount() {
     var code = generateMessageCode();
     var count = code.code.length;
     var warning = '';
-    if (count > 8748) {
+    if (count > 15936) {
         warning = ' Warning: Total message length exceeds available space. You can still export your .asm file to save your messages, but you will be unable to insert into your rom until you reduce the total size.';
     }
-    document.getElementById('count').innerHTML = `${count}/8748` + warning;
+    document.getElementById('count').innerHTML = `${count}/15936` + warning;
 }
 
 function loadMessage() {
@@ -215,7 +215,7 @@ function generateMessageCode() {
     var position;
         
     for (var i=0; i<200; i++){
-        offsets[i] = offset + 40402; //$9DD2
+        offsets[i] = offset + 33215; //$81C0 - 1
         var message = state.messages[i];
         if (message === undefined || message === null) {
             message = "";
@@ -272,7 +272,7 @@ function generateMessageData() {
     var offsets = messageCode.offsets;
     
     var data = `
-org $00DC53
+org $02C040
 db `;
 
     for (var i=0; i<200; i++) {
@@ -284,14 +284,14 @@ db `;
     data += "$00"; //just using up that last comma
 
     data += `
-org $00DDE3
+org $02C1D0
 db `
     for (var i=0; i<code.length; i++) {
         data += '$' + (code[i]).toString(16) + ',';
     }
     data += "$00\n"; //just using up that last comma
 
-    data += "warnpc $010011\n"
+    data += "warnpc $030010\n"
 
     data += "//messages:" + JSON.stringify(state.messages);
 
@@ -320,6 +320,7 @@ define CurrentLevel $0531
 define CurrentLevelArea $0532
 define PRGBank_0_1 $00
 define PRGBank_6_7 $03
+define PRGBank $0B
 define ChangeMappedPRGBank $FF85
 define ScreenUpdateBuffer_PauseText $0D
 define CardScreenUpdateIndex $05BD
@@ -340,11 +341,11 @@ db $00, $07
 
 // move TitleCardLeftover buffer
 org $03DC3A
-db $08, $FC
+db $AF, $DF
 
 // repurpose PauseText buffer
 org $03DC2A
-db $2E, $FC
+db $D5, $DF
 
 org $03E525
 JSR $EEDE
@@ -353,9 +354,9 @@ org $03EEEE
 
 
 
-LDA #{PRGBank_6_7}
+LDA #{PRGBank}
 JSR {ChangeMappedPRGBank}
-JSR $99B8
+JSR $8000
 LDA #{PRGBank_0_1}
 JSR {ChangeMappedPRGBank}
 
@@ -368,7 +369,7 @@ JSR {WaitForNMI_TurnOffPPU}
 RTS
 
 
-org $00D9C8
+org $02C010
 LDA {CurrentLevel}
 ASL
 ASL
@@ -378,9 +379,9 @@ ASL        ;// CurrentLevel * 10
 CLC
 ADC {CurrentLevelArea}
 TAY
-LDA $9C43,y
+LDA $8030,y
 STA $00 
-LDA $9D0B,y
+LDA $80F8,y
 STA $01
 
 
@@ -395,10 +396,10 @@ BNE -
 
 RTS
 
-warnpc $00DA80
+warnpc $02C040
 
 // freespace $03FC18
-org $03FC18
+org $03DFBF
 
 db $27, $D0, $10
   db $44, $BF, $AF, $AF, $AF, $AF, $EF, $11, $44, $FF, $FF, $FF, $FF, $FF, $FF, $11 
